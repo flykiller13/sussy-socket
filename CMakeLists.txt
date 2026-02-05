@@ -3,11 +3,22 @@ project(ron_server)
 
 set(CMAKE_CXX_STANDARD 23)
 
-add_executable(ron_server src/stream_server.cpp
-        src/ServerSocket.cpp
-        src/ServerSocket.h)
-add_executable(ron_client src/stream_client.cpp
+add_executable(sussy_server
         src/Socket.cpp
         src/Socket.h
         src/ServerSocket.cpp
-        src/ServerSocket.h)
+        src/ServerSocket.h
+        src/server_main.cpp
+)
+
+target_include_directories(sussy_server PRIVATE include/)
+
+add_executable(sussy_client
+        src/Socket.cpp
+        src/Socket.h
+        src/ServerSocket.cpp
+        src/ServerSocket.h
+        src/client_main.cpp
+)
+
+target_include_directories(sussy_client PRIVATE include/)

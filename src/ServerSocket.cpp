@@ -1,45 +1,27 @@
 ﻿
 #include "ServerSocket.h"
 
-void sigchld_handler(int s)
-{
-    (void)s; // quiet unused variable warning
+#define BACKLOG 10
 
-    // waitpid() might overwrite errno, so we save and restore it:
-    int saved_errno = errno;
-
-    while(waitpid(-1, NULL, WNOHANG) > 0) {}
-
-    errno = saved_errno;
-}
-
-// get sockaddr, IPv4 or IPv6:
-void *get_in_addr(struct sockaddr *sa)
-{
-    if (sa->sa_family == AF_INET) {
-        return &(((struct sockaddr_in*)sa)->sin_addr);
-    }
-
-    return &(((struct sockaddr_in6*)sa)->sin6_addr);
-}
+using namespace std;
 
 ServerSocket::ServerSocket(string port)
 {
     listen_socket_fd_ = -1;
     int status;
+    struct addrinfo hints;
     int sockopt_val = 1;
     struct addrinfo *servinfo = nullptr;  // will point to the results
 
-    memset(&hints_, 0, sizeof hints_); // make sure the struct is empty
-    hints_.ai_family = AF_INET;     // don't care IPv4 or IPv6
-    hints_.ai_socktype = SOCK_STREAM; // TCP stream sockets
-    hints_.ai_flags = AI_PASSIVE;     // fill in my IP for me
+    memset(&hints, 0, sizeof hints); // make sure the struct is empty
+    hints.ai_family = AF_INET;     // don't care IPv4 or IPv6
+    hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
+    hints.ai_flags = AI_PASSIVE;     // fill in my IP for me
 
     try
     {
         // Get address info
-        if ((status = getaddrinfo(nullptr, port.c_str(), &hints_, &servinfo)) != 0) {
-            fprintf(stderr, "get addr info error: %s\n", gai_strerror(status));
+        if ((status = getaddrinfo(nullptr, port.c_str(), &hints, &servinfo)) != 0) {
             throw std::runtime_error(gai_strerror(status));
         }
 
@@ -51,7 +33,7 @@ ServerSocket::ServerSocket(string port)
             // Create socket
             if ((listen_socket_fd_ = socket(p->ai_family, p->ai_socktype,
                                             p->ai_protocol)) == -1) {
-                printf("socket creation failed");
+                cout << "socket creation failed. trying next address..." << endl;
                 continue;
                                             }
 
@@ -63,7 +45,7 @@ ServerSocket::ServerSocket(string port)
 
             // Bind to the local address
             if (bind(listen_socket_fd_, p->ai_addr, p->ai_addrlen) == -1) {
-                printf("bind failed");
+                cout << "bind failed. trying next address..." << endl;
                 close(listen_socket_fd_);
                 continue;
             }
@@ -83,7 +65,7 @@ ServerSocket::ServerSocket(string port)
 
         // reap all dead processes
         struct sigaction sa;
-        sa.sa_handler = sigchld_handler;
+        sa.sa_handler = sussy_socket::net::sigchld_handler;
         sigemptyset(&sa.sa_mask);
         sa.sa_flags = SA_RESTART;
         if (sigaction(SIGCHLD, &sa, nullptr) == -1) {
@@ -91,12 +73,21 @@ ServerSocket::ServerSocket(string port)
         }
 
         freeaddrinfo(servinfo); // done with this address
+        servinfo = nullptr;
     }
     catch (std::runtime_error &e)
     {
         // Cleanup
-        if (listen_socket_fd_ != -1) close(listen_socket_fd_);
-        if (servinfo != nullptr) freeaddrinfo(servinfo);
+        if (listen_socket_fd_ != -1)
+        {
+            close(listen_socket_fd_);
+            listen_socket_fd_ = -1;
+        }
+        if (servinfo != nullptr)
+        {
+            freeaddrinfo(servinfo);
+            servinfo = nullptr;
+        }
 
         cerr << e.what() << endl;
         throw;
@@ -106,8 +97,12 @@ ServerSocket::ServerSocket(string port)
 
 ServerSocket::~ServerSocket()
 {
+    // Cleanup
     if (listen_socket_fd_ != -1)
+    {
         close(listen_socket_fd_);
+        listen_socket_fd_ = -1;
+    }
 }
 
 Socket ServerSocket::accept_connection()
@@ -123,6 +118,8 @@ Socket ServerSocket::accept_connection()
         throw std::runtime_error("accept failed");
     }
 
-    inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr *)&their_addr), s, sizeof s );
-    printf("server: got connection from %s\n", s);
+    inet_ntop(their_addr.ss_family, sussy_socket::net::get_in_addr((struct sockaddr *)&their_addr), s, sizeof s );
+    cout << "server: got connection from " << s << endl;
+
+    return {new_fd};
 }

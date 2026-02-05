@@ -1,20 +1,15 @@
 ﻿
 #include "Socket.h"
 
-// get sockaddr, IPv4 or IPv6:
-void *get_in_addr(struct sockaddr *sa)
-{
-    if (sa->sa_family == AF_INET) {
-        return &(((struct sockaddr_in*)sa)->sin_addr);
-    }
+#include <format>
 
-    return &(((struct sockaddr_in6*)sa)->sin6_addr);
-}
+using namespace std;
 
 Socket::Socket(string ip, string port)
 {
     socket_fd_ = -1;
     int status;
+    struct addrinfo hints;
     int sockopt_val = 1;
     char s[INET6_ADDRSTRLEN];
     struct addrinfo *servinfo = nullptr;  // will point to the results
@@ -28,7 +23,6 @@ Socket::Socket(string ip, string port)
         // Get address info
         if ((status = getaddrinfo(ip.c_str(), port.c_str(), &hints, &servinfo)) != 0)
         {
-            fprintf(stderr, "get addr info error: %s\n", gai_strerror(status));
             throw std::runtime_error(gai_strerror(status));
         }
 
@@ -40,18 +34,18 @@ Socket::Socket(string ip, string port)
             // Create socket
             if ((socket_fd_ = socket(p->ai_family, p->ai_socktype,
                     p->ai_protocol)) == -1) {
-                printf("socket creation failed");
+                cout << "socket creation failed. trying next address..." << endl;
                 continue;
                     }
 
             inet_ntop(p->ai_family,
-            get_in_addr((struct sockaddr *)p->ai_addr),
+            sussy_socket::net::get_in_addr((struct sockaddr *)p->ai_addr),
             s, sizeof s);
-            printf("client: attempting connection to %s\n", s);
+            cout << "client: attempting connection to " << s << endl;
 
             if (connect(socket_fd_, p->ai_addr, p->ai_addrlen) == -1) {
                 close(socket_fd_);
-                printf("connection failed");
+                cout << "connection failed. trying next address..." << endl;
                 continue;
             }
 
@@ -64,19 +58,27 @@ Socket::Socket(string ip, string port)
         }
 
         inet_ntop(p->ai_family,
-                get_in_addr((struct sockaddr *)p->ai_addr),
+                sussy_socket::net::get_in_addr((struct sockaddr *)p->ai_addr),
                 s, sizeof s);
-        printf("client: connected to %s\n", s);
+        cout << "client: connected to " << s << endl;
 
         freeaddrinfo(servinfo); // done with this address
+        servinfo = nullptr;
     }
-    catch (std::runtime_error &e)
+    catch (...)
     {
         // Cleanup
-        if (socket_fd_ != -1) close(socket_fd_);
-        if (servinfo != nullptr) freeaddrinfo(servinfo);
+        if (socket_fd_ != -1)
+        {
+            close(socket_fd_);
+            socket_fd_ = -1;
+        }
+        if (servinfo != nullptr)
+        {
+            freeaddrinfo(servinfo);
+            servinfo = nullptr;
+        }
 
-        cerr << e.what() << endl;
         throw;
     }
 }
@@ -94,7 +96,7 @@ void Socket::send_data(const string& data)
 
     while ( total_sent < len)
     {
-        bytes_sent = send(new_fd_, data.c_str() + total_sent, len - total_sent, 0);
+        bytes_sent = send(socket_fd_, data.c_str() + total_sent, len - total_sent, 0);
         if (bytes_sent == -1)
         {
             throw std::runtime_error("send data failed");
@@ -106,17 +108,18 @@ void Socket::send_data(const string& data)
 string Socket::receive_data()
 {
     int numbytes;
+    const int MAXDATASIZE = 1024;
     char buf[MAXDATASIZE];
-    if ((numbytes = recv(new_fd_, buf, MAXDATASIZE-1, 0)) == -1)
+    if ((numbytes = recv(socket_fd_, buf, MAXDATASIZE-1, 0)) == -1)
     {
         throw std::runtime_error("receive data failed");
     }
-    else if (numbytes == 0)
+    if (numbytes == 0)
     {
         throw std::runtime_error("client: server closed the connection");
     }
     buf[numbytes] = '\0'; // null-terminate whatever we received and treat like a string
-    printf("client: received '%s'", buf);
+    cout << format("client: received '{}'\n", buf);
 
     return buf;
 }

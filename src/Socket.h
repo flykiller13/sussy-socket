@@ -10,19 +10,15 @@
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <signal.h>
-
-// https://en.wikipedia.org/wiki/Berkeley_sockets#:~:text=the%20same%20computer.-,Socket%20API%20functions,-%5Bedit%5D
-
-#define PORT "3490"
-#define BACKLOG 10
-
-using namespace std;
+#include "network/netutils.h"
 
 class Socket
 {
+    friend class ServerSocket;
+
 public:
-    Socket();
-    Socket(string ip, string port);
+    Socket() : socket_fd_(-1) {}
+    Socket(std::string ip, std::string port);
 
     ~Socket();
 
@@ -47,15 +43,13 @@ public:
         return *this;
     }
 
-    void send_data(const string& data);
-    string receive_data();
+    void send_data(const std::string& data);
+    std::string receive_data();
 
 private:
-    int socket_fd_;
-    int new_fd_;
+    Socket(int socket_fd) : socket_fd_(socket_fd) {} // Private constructor for listener
 
-    struct addrinfo hints;
-    int MAXDATASIZE = 1024;
+    int socket_fd_;
 };
 
 

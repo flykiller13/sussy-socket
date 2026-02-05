@@ -4,18 +4,17 @@
 #include <string>
 #include "Socket.h"
 
-using namespace std;
 
 class ServerSocket
 {
 public:
-    ServerSocket(string port);
+    ServerSocket(std::string port);
     ~ServerSocket();
 
     Socket accept_connection();
 private:
     int listen_socket_fd_;
-    struct addrinfo hints_;
+
 };
 
 
