@@ -1,16 +1,8 @@
 ﻿#ifndef RON_SERVER_SOCKET_H
 #define RON_SERVER_SOCKET_H
+
+#include <string>
 #include <unistd.h>
-#include <cstring>
-#include <iostream>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/wait.h>
-#include <signal.h>
-#include "network/netutils.h"
 
 class Socket
 {

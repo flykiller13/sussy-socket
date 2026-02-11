@@ -1,6 +1,12 @@
 ﻿
 #pragma once
 
+#include <cerrno>        // For errno
+#include <csignal>       // For SIGCHLD (though might not be needed if only used in impl)
+#include <sys/wait.h>    // For waitpid(), WNOHANG
+#include <sys/socket.h>  // For sockaddr, AF_INET, AF_INET6
+#include <netinet/in.h>  // For sockaddr_in, sockaddr_in6
+
 namespace sussy_socket::net
 {
     inline void sigchld_handler(int s)

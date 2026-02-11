@@ -1,5 +1,4 @@
-﻿#include "Socket.h"
-#include "ServerSocket.h"
+﻿#include "ServerSocket.h"
 
 #define PORT "3490"
 
@@ -14,7 +13,8 @@ int main()
         Socket new_socket = listen.accept_connection();
         if (!fork()) // this is the child process
         {
-            new_socket.send_data("Hello from server!\n");
+            new_socket.send_data("Hello from server!");
+            new_socket.receive_data();
             exit(0);
         }
     }

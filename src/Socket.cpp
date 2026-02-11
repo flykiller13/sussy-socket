@@ -1,7 +1,16 @@
 ﻿
 #include "Socket.h"
 
+#include <cstring>           // For memset()
+#include <stdexcept>         // For std::runtime_error
+#include <sys/types.h>       // For socket types
+#include <sys/socket.h>      // For socket(), connect(), send(), recv()
+#include <netdb.h>           // For getaddrinfo(), struct addrinfo
+#include <arpa/inet.h>       // For inet_ntop()
+#include <cstdio>            // For printf(), perror()
+#include "network/netutils.h" // For get_in_addr()
 #include <format>
+#include <iostream>
 
 using namespace std;
 
