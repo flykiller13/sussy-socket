@@ -43,7 +43,7 @@ Socket::Socket(string ip, string port)
             // Create socket
             if ((socket_fd_ = socket(p->ai_family, p->ai_socktype,
                     p->ai_protocol)) == -1) {
-                cout << "socket creation failed. trying next address..." << endl;
+                cout << "Socket creation failed. trying next address..." << endl;
                 continue;
                     }
 
@@ -69,7 +69,7 @@ Socket::Socket(string ip, string port)
         inet_ntop(p->ai_family,
                 sussy_socket::net::get_in_addr((struct sockaddr *)p->ai_addr),
                 s, sizeof s);
-        cout << "client: connected to " << s << endl;
+        // cout << "client: connected to " << s << endl;
 
         freeaddrinfo(servinfo); // done with this address
         servinfo = nullptr;
@@ -128,7 +128,7 @@ string Socket::receive_data()
         throw std::runtime_error("client: server closed the connection");
     }
     buf[numbytes] = '\0'; // null-terminate whatever we received and treat like a string
-    cout << format("client: received '{}'\n", buf);
+    // cout << format("client: received '{}'\n", buf);
 
     return buf;
 }

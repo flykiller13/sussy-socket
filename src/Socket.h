@@ -35,6 +35,8 @@ public:
         return *this;
     }
 
+    int get_socket_fd() const { return socket_fd_; }
+
     void send_data(const std::string& data);
     std::string receive_data();
 

@@ -11,6 +11,8 @@ public:
     ServerSocket(std::string port);
     ~ServerSocket();
 
+    int get_listen_socket_fd() const { return listen_socket_fd_; }
+
     Socket accept_connection();
 private:
     int listen_socket_fd_;
