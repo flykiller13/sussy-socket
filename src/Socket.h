@@ -1,6 +1,7 @@
 ﻿#ifndef RON_SERVER_SOCKET_H
 #define RON_SERVER_SOCKET_H
 
+#include <cstdint>
 #include <string>
 #include <unistd.h>
 
@@ -38,7 +39,10 @@ public:
     int get_socket_fd() const { return socket_fd_; }
 
     void send_data(const std::string& data);
-    std::string receive_data();
+    std::string receive_data(size_t num_bytes);
+
+    void send_int(const uint32_t& data);
+    uint32_t receive_int();
 
 private:
     Socket(int socket_fd) : socket_fd_(socket_fd) {} // Private constructor for listener

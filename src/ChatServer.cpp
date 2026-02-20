@@ -1,8 +1,4 @@
-﻿//
-// Created by ronio on 14/02/2026.
-//
-
-#include "ChatServer.h"
+﻿#include "ChatServer.h"
 
 #include <sys/poll.h>
 
@@ -62,7 +58,8 @@ void ChatServer::handle_client_messages(vector<pollfd> &pfds, pollfd client_pfd)
         {
             if (client.get_socket_fd() == client_pfd.fd)
             {
-                string msg = client.receive_data();
+                uint32_t msg_len = client.receive_int(); // receive message length
+                string msg = client.receive_data(msg_len);
 
                 auto client_name = client_names_.find(client.get_socket_fd());
                 if (client_name == client_names_.end()) // Is the client's name registered?
@@ -72,14 +69,8 @@ void ChatServer::handle_client_messages(vector<pollfd> &pfds, pollfd client_pfd)
                 } else
                 {
                     // Client has a name, send the message to everyone!
-                    for (Socket &client : clients_)
-                    {
-                        if (client.get_socket_fd() != client_pfd.fd) // Dont send to ourself
-                        {
-                            msg = client_name->second + ": " + msg;
-                            client.send_data(msg);
-                        }
-                    }
+                    msg = client_name->second + ": " + msg; // Prefix the sender's name
+                    broadcast_message(msg, client.get_socket_fd());
                 }
             }
         }
@@ -120,4 +111,16 @@ void ChatServer::add_to_pfds(vector<pollfd> &pfds, int socket_fd)
 void ChatServer::remove_from_pfds(vector<pollfd> &pfds, int i)
 {
     pfds.erase(pfds.begin() + i);
+}
+
+void ChatServer::broadcast_message(string message, int sender_fd)
+{
+    for (Socket &client : clients_)
+    {
+        if (client.get_socket_fd() != sender_fd) // Dont send to sender
+        {
+            client.send_int(message.length()); // Send message length
+            client.send_data(message); // send message itself
+        }
+    }
 }

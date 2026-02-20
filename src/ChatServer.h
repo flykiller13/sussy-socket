@@ -20,6 +20,7 @@ private:
     void handle_client_messages(std::vector<pollfd> &pfds, pollfd client_pfd);
     void add_to_pfds(std::vector<pollfd> &pfds, int socket_fd);
     void remove_from_pfds(std::vector<pollfd> &pfds, int i);
+    void broadcast_message(std::string message, int sender_fd);
 
     ServerSocket listen_;
     std::vector<Socket> clients_;

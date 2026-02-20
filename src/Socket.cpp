@@ -114,21 +114,47 @@ void Socket::send_data(const string& data)
     }
 }
 
-string Socket::receive_data()
+string Socket::receive_data(size_t num_bytes)
 {
-    int numbytes;
-    const int MAXDATASIZE = 1024;
-    char buf[MAXDATASIZE];
-    if ((numbytes = recv(socket_fd_, buf, MAXDATASIZE-1, 0)) == -1)
+    int bytes_received;
+    int total_received = 0;
+    char buf[num_bytes];
+
+    // loop until we receive all the requested bytes
+    while (total_received < num_bytes)
     {
-        throw std::runtime_error("receive data failed");
+        if ((bytes_received = recv(socket_fd_, buf, (num_bytes - total_received), 0)) == -1)
+        {
+            throw std::runtime_error("receive data failed");
+        }
+        if (bytes_received == 0)
+        {
+            throw std::runtime_error("client: server closed the connection");
+        }
+        total_received += bytes_received;
     }
-    if (numbytes == 0)
-    {
-        throw std::runtime_error("client: server closed the connection");
-    }
-    buf[numbytes] = '\0'; // null-terminate whatever we received and treat like a string
+
+    buf[num_bytes] = '\0'; // null-terminate whatever we received and treat like a string
     // cout << format("client: received '{}'\n", buf);
 
     return buf;
+}
+
+void Socket::send_int(const uint32_t& data)
+{
+    int network_order = htonl(data); // convert to network byte order
+    if (send(socket_fd_, &network_order, sizeof(uint32_t), 0) == -1) // send int
+    {
+        throw std::runtime_error("send data failed");
+    }
+}
+
+uint32_t Socket::receive_int()
+{
+    int network_order;
+    if (recv(socket_fd_, &network_order, sizeof(int), 0) == -1) // receive int
+    {
+        throw std::runtime_error("receive data failed");
+    }
+    return ntohl(network_order);
 }
