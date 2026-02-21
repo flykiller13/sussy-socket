@@ -23,6 +23,8 @@ add_executable(sussy_client
         src/ChatServer.cpp
         src/ChatServer.h
         src/client_main.cpp
+        src/ChatClient.cpp
+        src/ChatClient.h
 )
 
 target_include_directories(sussy_client PRIVATE include/)
