@@ -2,29 +2,27 @@
 project(sussy_socket)
 
 set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(sussy_server
+# Define the library
+add_library(sussy_socket STATIC
         src/Socket.cpp
-        src/Socket.h
         src/ServerSocket.cpp
-        src/ServerSocket.h
-        src/ChatServer.cpp
-        src/ChatServer.h
-        src/chat_main.cpp
 )
 
-target_include_directories(sussy_server PRIVATE include/)
-
-add_executable(sussy_client
-        src/Socket.cpp
-        src/Socket.h
-        src/ServerSocket.cpp
-        src/ServerSocket.h
-        src/ChatServer.cpp
-        src/ChatServer.h
-        src/client_main.cpp
-        src/ChatClient.cpp
-        src/ChatClient.h
+# Set include directories
+# PUBLIC means these headers are needed by both the library and anyone using it
+target_include_directories(sussy_socket PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
 )
 
-target_include_directories(sussy_client PRIVATE include/)
+# Optional: Build examples if this is the standalone repo
+option(BUILD_EXAMPLES "Build example applications" ON)
+if(BUILD_EXAMPLES)
+    add_executable(socket_client_example examples/client_example.cpp)
+    target_link_libraries(socket_client_example PRIVATE sussy_socket)
+
+    add_executable(socket_server_example examples/server_example.cpp)
+    target_link_libraries(socket_server_example PRIVATE sussy_socket)
+endif()

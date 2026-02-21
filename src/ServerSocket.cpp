@@ -1,5 +1,5 @@
 ﻿
-#include "ServerSocket.h"
+#include "../include/sussy_socket/ServerSocket.h"
 #include <cstring>           // For memset()
 #include <stdexcept>         // For std::runtime_error
 #include <iostream>          // For cout, cerr
@@ -9,7 +9,7 @@
 #include <arpa/inet.h>       // For inet_ntop(), INET6_ADDRSTRLEN
 #include <unistd.h>          // For close()
 #include <signal.h>          // For sigaction(), SIGCHLD
-#include "network/netutils.h" // For sigchld_handler(), get_in_addr()
+#include "sussy_socket/netutils.h" // For sigchld_handler(), get_in_addr()
 
 #define BACKLOG 10
 
