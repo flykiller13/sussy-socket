@@ -13,9 +13,8 @@
 
 using namespace std;
 
-Socket::Socket(string ip, string port)
+Socket::Socket(string ip, string port) : socket_fd_(-1)
 {
-    socket_fd_ = -1;
     int status;
     struct addrinfo hints;
     int sockopt_val = 1;
