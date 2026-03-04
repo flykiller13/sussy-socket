@@ -6,26 +6,27 @@
 
 using namespace std;
 
-int main()
-{
-    ServerSocket listen = ServerSocket(PORT);
+int main() {
+  ServerSocket listen = ServerSocket(PORT);
 
-    cout << "server: listening on port " << PORT << endl;
+  cout << "server: listening on port " << PORT << '\n';
 
-    while(1) // main accept() loop
+  while (1) // main accept() loop
+  {
+    Socket new_socket = listen.accept_connection();
+    if (fork() == 0) // this is the child process
     {
-        Socket new_socket = listen.accept_connection();
-        if (!fork()) // this is the child process
-        {
-            uint32_t client_msg_len = new_socket.receive_int();
-            cout << "Client sent: " + new_socket.receive_data(client_msg_len) << endl;
+      uint32_t client_msg_len = new_socket.receive_int();
+      vector<uint8_t> client_msg = new_socket.receive_data(client_msg_len);
+      string client_msg_str = string(client_msg.begin(), client_msg.end());
+      cout << "Client sent: " + client_msg_str << '\n';
 
-            string msg = "Hello from server!";
-            new_socket.send_int(msg.length());
-            new_socket.send_data(msg);
-            exit(0);
-        }
+      string msg = "Hello from server!";
+      new_socket.send_int(msg.length());
+      new_socket.send_data(msg);
+      exit(0);
     }
+  }
 
-    return 0;
+  return 0;
 }

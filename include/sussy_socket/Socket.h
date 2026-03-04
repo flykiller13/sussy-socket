@@ -4,50 +4,41 @@
 #include <cstdint>
 #include <string>
 #include <unistd.h>
+#include <vector>
 
-class Socket
-{
-    friend class ServerSocket;
+class Socket {
+  friend class ServerSocket;
 
 public:
-    Socket() : socket_fd_(-1) {}
-    Socket(std::string ip, std::string port);
+  Socket() : socket_fd_(-1) {
+  }
 
-    ~Socket();
+  Socket(const std::string &ip, const std::string &port);
 
-    // Copying a socket is prohibited
-    Socket(const Socket& other) = delete; // Copy constructor
-    Socket& operator=(const Socket& other) = delete; // Copy assignment operator
+  // Copying a socket is prohibited
+  Socket(const Socket &other) = delete; // Copy constructor
+  Socket &operator=(const Socket &other) = delete; // Copy assignment operator
 
-    Socket(Socket&& other) noexcept : socket_fd_(other.socket_fd_) // Move constructor
-    {
-        other.socket_fd_ = -1;
-    }
-    Socket& operator=(Socket&& other) noexcept // Move assignment operator
-    {
-        if (this != &other)
-        {
-            if (socket_fd_ != -1)
-                close(socket_fd_); // Close our own socket
+  Socket(Socket &&other) noexcept;
+  Socket &operator=(Socket &&other) noexcept; // Move assignment operator
 
-            socket_fd_ = other.socket_fd_;
-            other.socket_fd_ = -1;
-        }
-        return *this;
-    }
+  ~Socket();
 
-    int get_socket_fd() const { return socket_fd_; }
+  [[nodiscard]] int get_socket_fd() const {
+    return socket_fd_;
+  }
 
-    void send_data(const std::string& data);
-    std::string receive_data(size_t num_bytes);
+  void send_data(const std::string &data) const;
+  [[nodiscard]] std::vector<uint8_t> receive_data(size_t num_bytes) const;
 
-    void send_int(const uint32_t& data);
-    uint32_t receive_int();
+  void send_int(const uint32_t &data) const;
+  [[nodiscard]] uint32_t receive_int() const;
 
 private:
-    Socket(int socket_fd) : socket_fd_(socket_fd) {} // Private constructor for listener
+  explicit Socket(int socket_fd) : socket_fd_(socket_fd) {
+  } // Private constructor for listener
 
-    int socket_fd_;
+  int socket_fd_;
 };
 
 

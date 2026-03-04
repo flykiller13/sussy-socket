@@ -1,21 +1,31 @@
-﻿
-#ifndef RON_SERVER_SERVERSOCKET_H
+﻿#ifndef RON_SERVER_SERVERSOCKET_H
 #define RON_SERVER_SERVERSOCKET_H
-#include <string>
 #include "Socket.h"
+#include <string>
 
 
-class ServerSocket
-{
+class ServerSocket {
 public:
-    ServerSocket(std::string port);
-    ~ServerSocket();
+  explicit ServerSocket(const std::string &port);
 
-    int get_listen_socket_fd() const { return listen_socket_fd_; }
+  // Copy semantics
+  ServerSocket(const ServerSocket &other) = delete;
+  ServerSocket &operator=(const ServerSocket &other) = delete;
 
-    Socket accept_connection();
+  // Move semantics
+  ServerSocket(ServerSocket &&other) noexcept; // Move constructor
+  ServerSocket &operator=(ServerSocket &&other) noexcept;
+  // Move assignment operator
+
+  ~ServerSocket();
+
+  [[nodiscard]] int get_listen_socket_fd() const;
+
+  [[nodiscard]] Socket accept_connection() const;
+
 private:
-    int listen_socket_fd_;
+  int listen_socket_fd_;
+  const size_t backlog_ = 10;
 
 };
 

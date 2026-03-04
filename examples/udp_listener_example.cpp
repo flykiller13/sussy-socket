@@ -1,34 +1,18 @@
-﻿/*
-** listener.c -- a datagram sockets "server" demo
-*/
+﻿#include "sussy_socket/UdpSocket.h"
 
-#include "sussy_socket/UdpSocket.h"
-
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
 #include <iostream>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <netdb.h>
-#include <ostream>
-
-#define MAXBUFLEN 100
 
 using namespace std;
 
-int main(void)
-{
+int main(void) {
   UdpSocket socket("4950");
 
   string ip = "127.0.0.1";
   string port = "4950";
-  string received_message = socket.receive_from(ip, port);
+  vector<uint8_t> received_packet = socket.receive_from(ip, port);
+  string received_message = string(received_packet.begin(),
+                                   received_packet.end());
 
-  cout << "Received: " << received_message << endl;
+  cout << "Received: " << received_message << '\n';
 }
