@@ -8,7 +8,7 @@ public:
     // constructor for talker
     UdpSocket();
     // constructor for listener
-    UdpSocket(std::string port);
+    UdpSocket(const std::string& port);
 
     // Move semantics
     UdpSocket(UdpSocket&& other) noexcept; // Move constructor
@@ -22,7 +22,7 @@ public:
 
     int get_socket_fd() const { return socket_fd_; }
 
-    void send_to(const std::string& data, std::string& ip, std::string& port);
+    void send_to(const std::string& data, const std::string& ip, const std::string& port);
     std::string receive_from(std::string& ip, std::string& port);
 
 private:
