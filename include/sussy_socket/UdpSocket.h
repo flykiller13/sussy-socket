@@ -1,5 +1,6 @@
 ﻿#ifndef SUSSY_SOCKET_UDPSOCKET_H
 #define SUSSY_SOCKET_UDPSOCKET_H
+#include <cstdint> // For uint8_t
 #include <string>
 #include <vector>
 
@@ -27,7 +28,8 @@ public:
 
   void send_to(const std::string &data, const std::string &ip,
                const std::string &port) const;
-  std::vector<__uint8_t> receive_from(std::string &ip, std::string &port) const;
+  std::vector<uint8_t> receive_from(std::string &ip,
+                                    std::string &port) const;
 
 private:
   int socket_fd_;

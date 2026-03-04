@@ -2,8 +2,7 @@
 
 using namespace std;
 
-int main(int argc, char *argv[])
-{
+int main() {
   UdpSocket talker = UdpSocket();
 
   string ip = "127.0.0.1";

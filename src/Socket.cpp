@@ -3,14 +3,10 @@
 
 #include "sussy_socket/netutils.h" // For get_in_addr()
 #include <arpa/inet.h>       // For inet_ntop()
-#include <cstring>           // For memset()
-#include <format>
 #include <iostream>
 #include <netdb.h>           // For getaddrinfo(), struct addrinfo
 #include <stdexcept>         // For std::runtime_error
-#include <vector>
 #include <sys/socket.h>      // For socket(), connect(), send(), recv()
-#include <sys/types.h>       // For socket types
 
 using namespace std;
 

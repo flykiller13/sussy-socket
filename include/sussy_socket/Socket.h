@@ -3,7 +3,6 @@
 
 #include <cstdint>
 #include <string>
-#include <unistd.h>
 #include <vector>
 
 class Socket {

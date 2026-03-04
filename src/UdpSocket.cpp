@@ -1,7 +1,6 @@
 ﻿#include "sussy_socket/UdpSocket.h"
 #include "sussy_socket/netutils.h" // For get_in_addr()
 #include <arpa/inet.h>       // For inet_ntop()
-#include <cstring>           // For memset()
 #include <format>
 #include <iostream>
 #include <netdb.h>           // For getaddrinfo(), struct addrinfo
@@ -16,7 +15,7 @@ using namespace std;
 UdpSocket::UdpSocket() : socket_fd_(-1) {
   try {
     // Create socket - connectionless
-    socket_fd_ = socket(AF_UNSPEC, SOCK_DGRAM,
+    socket_fd_ = socket(AF_INET, SOCK_DGRAM,
                         0);
     if (socket_fd_ == -1) {
       throw std::runtime_error("socket creation failed");

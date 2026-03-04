@@ -2,6 +2,8 @@
 
 #include "sussy_socket/ServerSocket.h"
 
+#include <unistd.h>
+
 #define PORT "3490"
 
 using namespace std;

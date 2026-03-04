@@ -1,7 +1,6 @@
-﻿#include <iostream>
-#include <sys/socket.h>
+﻿#include "sussy_socket/Socket.h"
 
-#include "sussy_socket/Socket.h"
+#include <iostream>
 
 #define IP "127.0.0.1"
 #define PORT "3490"

@@ -1,7 +1,6 @@
 ﻿#include "sussy_socket/UdpSocket.h"
 
 #include <iostream>
-#include <netdb.h>
 
 using namespace std;
 
