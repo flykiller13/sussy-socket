@@ -26,7 +26,7 @@ public:
     return socket_fd_;
   }
 
-  void send_to(const std::string &data, const std::string &ip,
+  void send_to(const std::vector<uint8_t> &data, const std::string &ip,
                const std::string &port) const;
   std::vector<uint8_t> receive_from(std::string &ip,
                                     std::string &port) const;

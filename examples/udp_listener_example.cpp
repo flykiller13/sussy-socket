@@ -4,7 +4,7 @@
 
 using namespace std;
 
-int main(void) {
+int main() {
   UdpSocket socket("4950");
 
   string ip = "127.0.0.1";
@@ -14,4 +14,6 @@ int main(void) {
                                    received_packet.end());
 
   cout << "Received: " << received_message << '\n';
+
+  return 0;
 }

@@ -2,7 +2,9 @@
 #include "sussy_socket/Socket.h"
 
 #include "sussy_socket/netutils.h" // For get_in_addr()
+
 #include <arpa/inet.h>       // For inet_ntop()
+#include <cstring>
 #include <iostream>
 #include <netdb.h>           // For getaddrinfo(), struct addrinfo
 #include <stdexcept>         // For std::runtime_error
@@ -99,13 +101,24 @@ Socket &Socket::operator=(Socket &&other) noexcept {
   return *this;
 }
 
-void Socket::send_data(const string &data) const {
+void Socket::send_data(const vector<uint8_t> &data) const {
+  // Prepare length header
+  uint32_t network_order = htonl(data.size());
+
+  // Calculate total size
+  size_t total_len = sizeof(uint32_t) + data.size();
+
+  // Create a buffer with the size header and data
+  vector<uint8_t> buffer(total_len);
+  memcpy(buffer.data(), &network_order, sizeof(uint32_t));
+  memcpy(buffer.data() + sizeof(uint32_t), data.data(), data.size());
+
   int bytes_sent = 0;
   size_t total_sent = 0;
-  size_t len = data.length();
 
-  while (total_sent < len) {
-    bytes_sent = send(socket_fd_, data.c_str() + total_sent, len - total_sent,
+  while (total_sent < total_len) {
+    bytes_sent = send(socket_fd_, buffer.data() + total_sent,
+                      total_len - total_sent,
                       0);
     if (bytes_sent == -1) {
       throw std::runtime_error("send data failed");
@@ -114,15 +127,35 @@ void Socket::send_data(const string &data) const {
   }
 }
 
-vector<uint8_t> Socket::receive_data(size_t num_bytes) const {
-  int bytes_received = 0;
+vector<uint8_t> Socket::receive_data() const {
+  // First receive the size header
+  uint32_t network_order = 0;
   size_t total_received = 0;
-  vector<uint8_t> buf(num_bytes);
+  int bytes_received = 0;
 
-  // loop until we receive all the requested bytes
-  while (total_received < num_bytes) {
+  while (total_received < sizeof(uint32_t)) {
     bytes_received =
-        recv(socket_fd_, buf.data(), (num_bytes - total_received), 0);
+        recv(socket_fd_,
+             (reinterpret_cast<uint8_t *>(&network_order) + total_received),
+             (sizeof(uint32_t) - total_received),
+             0);
+    if (bytes_received == -1) {
+      throw std::runtime_error("receive data failed");
+    }
+    if (bytes_received == 0) {
+      throw std::runtime_error("client: server closed the connection");
+    }
+    total_received += bytes_received;
+  }
+  uint32_t data_size = ntohl(network_order);
+
+  // Now receive the data
+  vector<uint8_t> buf(data_size);
+  total_received = 0;
+  while (total_received < data_size) {
+    bytes_received =
+        recv(socket_fd_, (buf.data() + total_received),
+             (data_size - total_received), 0);
     if (bytes_received == -1) {
       throw std::runtime_error("receive data failed");
     }
@@ -135,19 +168,3 @@ vector<uint8_t> Socket::receive_data(size_t num_bytes) const {
   return buf;
 }
 
-void Socket::send_int(const uint32_t &data) const {
-  uint32_t network_order = htonl(data); // convert to network byte order
-  if (send(socket_fd_, &network_order, sizeof(uint32_t), 0) == -1) // send int
-  {
-    throw std::runtime_error("send data failed");
-  }
-}
-
-uint32_t Socket::receive_int() const {
-  uint32_t network_order = 0;
-  if (recv(socket_fd_, &network_order, sizeof(int), 0) == -1) // receive int
-  {
-    throw std::runtime_error("receive data failed");
-  }
-  return ntohl(network_order);
-}

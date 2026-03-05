@@ -27,11 +27,8 @@ public:
     return socket_fd_;
   }
 
-  void send_data(const std::string &data) const;
-  [[nodiscard]] std::vector<uint8_t> receive_data(size_t num_bytes) const;
-
-  void send_int(const uint32_t &data) const;
-  [[nodiscard]] uint32_t receive_int() const;
+  void send_data(const std::vector<uint8_t> &data) const;
+  [[nodiscard]] std::vector<uint8_t> receive_data() const;
 
 private:
   explicit Socket(int socket_fd) : socket_fd_(socket_fd) {

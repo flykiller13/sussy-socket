@@ -112,7 +112,7 @@ UdpSocket::~UdpSocket() {
   }
 }
 
-void UdpSocket::send_to(const std::string &data, const std::string &ip,
+void UdpSocket::send_to(const vector<uint8_t> &data, const std::string &ip,
                         const std::string &port) const {
   addrinfo hints{};
   hints.ai_family = AF_UNSPEC;
@@ -127,7 +127,7 @@ void UdpSocket::send_to(const std::string &data, const std::string &ip,
   // Loop through all the results and send to the first valid one
   int numbytes = -1;
   for (const addrinfo *p = address_info; p != nullptr; p = p->ai_next) {
-    numbytes = sendto(socket_fd_, data.c_str(), data.size(), 0,
+    numbytes = sendto(socket_fd_, data.data(), data.size(), 0,
                       p->ai_addr, p->ai_addrlen);
     if (numbytes != -1) {
       cout << "talker: sent " << numbytes << " bytes to " << ip << '\n';

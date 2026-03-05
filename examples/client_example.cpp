@@ -12,11 +12,10 @@ int main() {
   cout << "Connected to server at " << IP << ":" << PORT << '\n';
 
   string msg = "Hello from client!";
-  client.send_int(msg.length());
-  client.send_data(msg);
+  vector<uint8_t> msg_data(msg.begin(), msg.end());
+  client.send_data(msg_data);
 
-  uint32_t server_msg_len = client.receive_int();
-  vector<uint8_t> server_msg = client.receive_data(server_msg_len);
+  vector<uint8_t> server_msg = client.receive_data();
   string server_msg_str = string(server_msg.begin(), server_msg.end());
   cout << "Server sent: " + server_msg_str << '\n';
 
