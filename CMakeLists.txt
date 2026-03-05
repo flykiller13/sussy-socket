@@ -8,10 +8,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_library(sussy_socket STATIC
         src/Socket.cpp
         src/ServerSocket.cpp
+        src/UdpSocket.cpp
 )
 
 # Set include directories
-# PUBLIC means these headers are needed by both the library and anyone using it
 target_include_directories(sussy_socket PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
@@ -26,13 +26,9 @@ if (BUILD_EXAMPLES)
     add_executable(socket_server_example examples/server_example.cpp)
     target_link_libraries(socket_server_example PRIVATE sussy_socket)
 
-    add_executable(udp_listener_example
-            examples/udp_listener_example.cpp
-            src/UdpSocket.cpp)
+    add_executable(udp_listener_example examples/udp_listener_example.cpp)
     target_link_libraries(udp_listener_example PRIVATE sussy_socket)
 
-    add_executable(udp_talker_example
-            examples/udp_talker_example.cpp
-            src/UdpSocket.cpp)
+    add_executable(udp_talker_example examples/udp_talker_example.cpp)
     target_link_libraries(udp_talker_example PRIVATE sussy_socket)
 endif ()
