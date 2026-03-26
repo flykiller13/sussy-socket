@@ -1,4 +1,4 @@
-﻿#include "sussy_socket/ServerSocket.h"
+﻿#include "sussy_socket/TcpAcceptor.h"
 #include <iostream>          // For cout, cerr
 #include <stdexcept>         // For std::runtime_error
 #include <sys/socket.h>      // For socket(), bind(), listen(), accept(), setsockopt()
@@ -13,19 +13,18 @@
 
 using namespace std;
 
-ServerSocket::ServerSocket(const string &port) : listen_socket_fd_(-1) {
-  int status = 0;
+TcpAcceptor::TcpAcceptor(const string &port) : listen_socket_fd_(-1) {
 
-  int sockopt_val = 1;
   addrinfo *addr_info = nullptr; // will point to the results
 
   addrinfo hints{};
-  hints.ai_family = AF_INET; // don't care IPv4 or IPv6
+  hints.ai_family = AF_UNSPEC; // don't care IPv4 or IPv6
   hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
   hints.ai_flags = AI_PASSIVE; // fill in my IP for me
 
   try {
     // Get address info
+    int status = 0;
     status = getaddrinfo(nullptr, port.c_str(), &hints, &addr_info);
     if (status != 0) {
       throw std::runtime_error(gai_strerror(status));
@@ -45,8 +44,9 @@ ServerSocket::ServerSocket(const string &port) : listen_socket_fd_(-1) {
       }
 
       // Set socket options
+      int sockopt_val = 1;
       if (setsockopt(listen_socket_fd_, SOL_SOCKET, SO_REUSEADDR, &sockopt_val,
-                     sizeof(int)) == -1) {
+                     sizeof(sockopt_val)) == -1) {
         throw std::runtime_error("setsockopt failed");
       }
 
@@ -94,12 +94,12 @@ ServerSocket::ServerSocket(const string &port) : listen_socket_fd_(-1) {
   }
 }
 
-ServerSocket::ServerSocket(ServerSocket &&other) noexcept : listen_socket_fd_(
+TcpAcceptor::TcpAcceptor(TcpAcceptor &&other) noexcept : listen_socket_fd_(
     other.listen_socket_fd_) {
   other.listen_socket_fd_ = -1;
 }
 
-ServerSocket &ServerSocket::operator=(ServerSocket &&other) noexcept {
+TcpAcceptor &TcpAcceptor::operator=(TcpAcceptor &&other) noexcept {
   if (this != &other) {
     if (listen_socket_fd_ != -1) {
       close(listen_socket_fd_); // Close our own socket
@@ -111,7 +111,7 @@ ServerSocket &ServerSocket::operator=(ServerSocket &&other) noexcept {
   return *this;
 }
 
-ServerSocket::~ServerSocket() {
+TcpAcceptor::~TcpAcceptor() {
   // Cleanup
   if (listen_socket_fd_ != -1) {
     close(listen_socket_fd_);
@@ -119,11 +119,11 @@ ServerSocket::~ServerSocket() {
   }
 }
 
-int ServerSocket::get_listen_socket_fd() const {
+int TcpAcceptor::get_listen_socket_fd() const {
   return listen_socket_fd_;
 }
 
-Socket ServerSocket::accept_connection() const {
+TcpSocket TcpAcceptor::accept_connection() const {
   sockaddr_storage their_addr{};
   socklen_t addr_size = sizeof their_addr;
   char ip_buffer[INET6_ADDRSTRLEN];
@@ -142,5 +142,5 @@ Socket ServerSocket::accept_connection() const {
             sizeof ip_buffer);
   cout << "server: got connection from " << ip_buffer << '\n';
 
-  return Socket(new_fd);
+  return TcpSocket(new_fd);
 }

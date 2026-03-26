@@ -6,8 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Define the library
 add_library(sussy_socket STATIC
-        src/Socket.cpp
-        src/ServerSocket.cpp
+        src/TcpSocket.cpp
+        src/TcpAcceptor.cpp
         src/UdpSocket.cpp
 )
 
@@ -20,11 +20,11 @@ target_include_directories(sussy_socket PUBLIC
 # Optional: Build examples if this is the standalone repo
 option(BUILD_EXAMPLES "Build example applications" ON)
 if (BUILD_EXAMPLES)
-    add_executable(socket_client_example examples/client_example.cpp)
-    target_link_libraries(socket_client_example PRIVATE sussy_socket)
+    add_executable(tcp_client_example examples/tcp_client_example.cpp)
+    target_link_libraries(tcp_client_example PRIVATE sussy_socket)
 
-    add_executable(socket_server_example examples/server_example.cpp)
-    target_link_libraries(socket_server_example PRIVATE sussy_socket)
+    add_executable(tcp_server_example examples/tcp_server_example.cpp)
+    target_link_libraries(tcp_server_example PRIVATE sussy_socket)
 
     add_executable(udp_listener_example examples/udp_listener_example.cpp)
     target_link_libraries(udp_listener_example PRIVATE sussy_socket)

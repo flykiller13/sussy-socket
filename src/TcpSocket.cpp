@@ -1,5 +1,5 @@
 ﻿
-#include "sussy_socket/Socket.h"
+#include "sussy_socket/TcpSocket.h"
 
 #include "sussy_socket/netutils.h" // For get_in_addr()
 
@@ -12,7 +12,7 @@
 
 using namespace std;
 
-Socket::Socket(const string &ip, const string &port) : socket_fd_(-1) {
+TcpSocket::TcpSocket(const string &ip, const string &port) : socket_fd_(-1) {
   addrinfo hints{};
   hints.ai_family = AF_UNSPEC; // don't care IPv4 or IPv6
   hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
@@ -79,17 +79,18 @@ Socket::Socket(const string &ip, const string &port) : socket_fd_(-1) {
   }
 }
 
-Socket::~Socket() {
+TcpSocket::~TcpSocket() {
   if (socket_fd_ != -1) {
     close(socket_fd_);
   }
 }
 
-Socket::Socket(Socket &&other) noexcept : socket_fd_(other.socket_fd_) {
+TcpSocket::TcpSocket(TcpSocket &&other) noexcept : socket_fd_(
+    other.socket_fd_) {
   other.socket_fd_ = -1;
 }
 
-Socket &Socket::operator=(Socket &&other) noexcept {
+TcpSocket &TcpSocket::operator=(TcpSocket &&other) noexcept {
   if (this != &other) {
     if (socket_fd_ != -1) {
       close(socket_fd_); // Close our own socket
@@ -101,7 +102,7 @@ Socket &Socket::operator=(Socket &&other) noexcept {
   return *this;
 }
 
-void Socket::send_data(const vector<uint8_t> &data) const {
+void TcpSocket::send_data(const vector<uint8_t> &data) const {
   // Prepare length header
   uint32_t network_order = htonl(data.size());
 
@@ -127,7 +128,7 @@ void Socket::send_data(const vector<uint8_t> &data) const {
   }
 }
 
-vector<uint8_t> Socket::receive_data() const {
+vector<uint8_t> TcpSocket::receive_data() const {
   // First receive the size header
   uint32_t network_order = 0;
   size_t total_received = 0;
@@ -148,6 +149,10 @@ vector<uint8_t> Socket::receive_data() const {
     total_received += bytes_received;
   }
   uint32_t data_size = ntohl(network_order);
+  uint32_t max_size = 64 * 1024 * 1024;
+  if (data_size > max_size) {
+    throw std::runtime_error("Message too large");
+  }
 
   // Now receive the data
   vector<uint8_t> buf(data_size);

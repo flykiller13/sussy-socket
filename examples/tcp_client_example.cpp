@@ -1,4 +1,4 @@
-﻿#include "sussy_socket/Socket.h"
+﻿#include "sussy_socket/TcpSocket.h"
 
 #include <iostream>
 
@@ -8,7 +8,7 @@
 using namespace std;
 
 int main() {
-  Socket client = Socket(IP, PORT);
+  TcpSocket client = TcpSocket(IP, PORT);
   cout << "Connected to server at " << IP << ":" << PORT << '\n';
 
   string msg = "Hello from client!";

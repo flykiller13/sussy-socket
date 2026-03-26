@@ -59,6 +59,13 @@ UdpSocket::UdpSocket(const std::string &port) : socket_fd_(-1) {
         continue;
       }
 
+      // Set socket options
+      int sockopt_val = 1;
+      if (setsockopt(socket_fd_, SOL_SOCKET, SO_REUSEADDR, &sockopt_val,
+                     sizeof(sockopt_val)) == -1) {
+        throw std::runtime_error("setsockopt failed");
+      }
+
       if (bind(socket_fd_, p->ai_addr, p->ai_addrlen) == -1) {
         cout << "Listener bind failed. trying next address...\n";
         close(socket_fd_);
@@ -129,8 +136,9 @@ void UdpSocket::send_to(const vector<uint8_t> &data, const std::string &ip,
   for (const addrinfo *p = address_info; p != nullptr; p = p->ai_next) {
     numbytes = sendto(socket_fd_, data.data(), data.size(), 0,
                       p->ai_addr, p->ai_addrlen);
-    if (numbytes != -1) {
-      cout << "talker: sent " << numbytes << " bytes to " << ip << '\n';
+    if (numbytes == static_cast<int>(data.size())) {
+      // Was all data sent?
+      // cout << "talker: sent " << numbytes << " bytes to " << ip << '\n';
       break;
     }
   }
@@ -158,7 +166,9 @@ vector<uint8_t> UdpSocket::receive_from(std::string &ip,
   if (bytes_received == -1) {
     throw std::runtime_error("recvfrom failed");
   }
-
+  if (bytes_received == static_cast<int>(maxbuflen_)) {
+    throw std::runtime_error("receive_from: datagram may have been truncated");
+  }
   // Extract ip
   ip = inet_ntop(their_addr.ss_family,
                  sussy_socket::net::get_in_addr(

@@ -33,7 +33,8 @@ public:
 
 private:
   int socket_fd_;
-  const size_t maxbuflen_ = 2048; // Should be enough for any MTU
+  const size_t maxbuflen_ = 65507;
+  // theoretical max UDP payload: 65535 − 8-byte UDP header − 20-byte IP header
 };
 
 
